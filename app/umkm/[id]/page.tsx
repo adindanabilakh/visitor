@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Clock, Heart } from "lucide-react";
@@ -12,104 +13,66 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/lib/favorites-context";
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-}
+export default function UMKMDetailPage() {
+  const params = useParams<{ id: string }>();
 
-export interface UMKM {
-  id: string;
-  name: string;
-  description: string;
-  image?: string; // ✅ Ubah ini agar tidak wajib
-  location: string;
-  phoneNumber: string;
-  latitude: number;
-  longitude: number;
-  openingTime: string;
-  closingTime: string;
-  category: string;
-  products: Product[];
-}
+  if (!params?.id) {
+    return <div>Error: Invalid ID</div>; // Bisa ganti dengan UI khusus
+  }
 
-// Mock data - in a real application, this would come from an API
-const umkmData = {
-  id: "1",
-  name: "Batik Sekar",
-  description:
-    "Traditional handmade batik from local artisans, featuring intricate patterns and vibrant colors that reflect the rich cultural heritage of Indonesia. Each piece is carefully crafted using time-honored techniques passed down through generations.",
-  images: [
-    "/placeholder.svg?height=400&width=800&text=UMKM+Image+1",
-    "/placeholder.svg?height=400&width=800&text=UMKM+Image+2",
-    "/placeholder.svg?height=400&width=800&text=UMKM+Image+3",
-  ],
-  image: "/placeholder.svg?height=400&width=800&text=UMKM+Image+1", // ✅ Tambahkan ini
-  location: "Jl. Malioboro No. 123, Yogyakarta",
-  phoneNumber: "+62 812-3456-7890",
-  latitude: -7.797068,
-  longitude: 110.370529,
-  openingTime: "09:00",
-  closingTime: "18:00",
-  category: "Textiles",
-  products: [
-    {
-      id: "1",
-      name: "Batik Shirt",
-      description: "Handmade batik shirt with traditional Javanese motifs",
-      image: "/placeholder.svg?height=200&width=400&text=Batik+Shirt",
-      price: 49.99,
-    },
-    {
-      id: "2",
-      name: "Batik Scarf",
-      description: "Elegant batik scarf made from fine silk",
-      image: "/placeholder.svg?height=200&width=400&text=Batik+Scarf",
-      price: 29.99,
-    },
-    {
-      id: "3",
-      name: "Batik Tablecloth",
-      description:
-        "Beautiful batik tablecloth for a touch of Indonesian elegance",
-      image: "/placeholder.svg?height=200&width=400&text=Batik+Tablecloth",
-      price: 39.99,
-    },
-  ],
-};
-
-export default function UMKMDetail({ params }: { params: { id: string } }) {
-  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(
-    null
-  );
-
-  useEffect(() => {
-    async function resolveParams() {
-      if ("then" in params) {
-        const result = await params;
-        setResolvedParams(result);
-      } else {
-        setResolvedParams(params);
-      }
-    }
-    resolveParams();
-  }, [params]);
-
-  if (!resolvedParams) return <div>Loading...</div>;
-
-  const { id } = resolvedParams;
+  // Mock data - di real aplikasi ini bisa diganti dengan fetch dari API
+  const umkmData = {
+    id: params.id,
+    name: "Batik Sekar",
+    description:
+      "Traditional handmade batik from local artisans, featuring intricate patterns and vibrant colors that reflect the rich cultural heritage of Indonesia.",
+    images: [
+      "/placeholder.svg?height=400&width=800&text=UMKM+Image+1",
+      "/placeholder.svg?height=400&width=800&text=UMKM+Image+2",
+      "/placeholder.svg?height=400&width=800&text=UMKM+Image+3",
+    ],
+    image: "/placeholder.svg?height=400&width=800&text=UMKM+Image+1",
+    location: "Jl. Malioboro No. 123, Yogyakarta",
+    phoneNumber: "+62 812-3456-7890",
+    latitude: -7.797068,
+    longitude: 110.370529,
+    openingTime: "09:00",
+    closingTime: "18:00",
+    category: "Textiles",
+    products: [
+      {
+        id: "1",
+        name: "Batik Shirt",
+        description: "Handmade batik shirt with traditional Javanese motifs",
+        image: "/placeholder.svg?height=200&width=400&text=Batik+Shirt",
+        price: 49.99,
+      },
+      {
+        id: "2",
+        name: "Batik Scarf",
+        description: "Elegant batik scarf made from fine silk",
+        image: "/placeholder.svg?height=200&width=400&text=Batik+Scarf",
+        price: 29.99,
+      },
+      {
+        id: "3",
+        name: "Batik Tablecloth",
+        description:
+          "Beautiful batik tablecloth for a touch of Indonesian elegance",
+        image: "/placeholder.svg?height=200&width=400&text=Batik+Tablecloth",
+        price: 39.99,
+      },
+    ],
+  };
 
   const [umkm, setUMKM] = useState(umkmData);
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites();
   const isFavorited = isFavorite(umkm.id);
 
   useEffect(() => {
-    // In a real application, fetch the UMKM data based on the ID
-    // For now, we'll just use the mock data
+    // Jika nanti ada API, bisa fetch di sini berdasarkan params.id
     setUMKM(umkmData);
-  }, []);
+  }, [params.id]);
 
   const handleFavoriteToggle = () => {
     if (isFavorited) {
