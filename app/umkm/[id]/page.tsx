@@ -80,9 +80,27 @@ const umkmData = {
   ],
 };
 
-export default async function UMKMDetail({ params }: { params: { id: string } }) {
-  const resolvedParams = await params;
+export default function UMKMDetail({ params }: { params: { id: string } }) {
+  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(
+    null
+  );
+
+  useEffect(() => {
+    async function resolveParams() {
+      if ("then" in params) {
+        const result = await params;
+        setResolvedParams(result);
+      } else {
+        setResolvedParams(params);
+      }
+    }
+    resolveParams();
+  }, [params]);
+
+  if (!resolvedParams) return <div>Loading...</div>;
+
   const { id } = resolvedParams;
+
   const [umkm, setUMKM] = useState(umkmData);
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites();
   const isFavorited = isFavorite(umkm.id);
