@@ -80,11 +80,9 @@ const umkmData = {
   ],
 };
 
-export default function UMKMDetail({
-  params,
-}: {
-  params: { id: string } | Promise<any>;
-}) {
+export default async function UMKMDetail({ params }: { params: { id: string } }) {
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   const [umkm, setUMKM] = useState(umkmData);
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites();
   const isFavorited = isFavorite(umkm.id);
