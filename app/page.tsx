@@ -170,9 +170,15 @@ export default function Home() {
 
     let cleanUrl = url
       .replace(/\\/g, "") // ✅ Hapus karakter backslash yang tidak perlu
-      .replace(/\/?storage\/+storage\//g, "/storage/") // ✅ Fix path yang dobel `storage/storage/`
+      .replace(/\/?storage\/+storage\//g, "/storage/") // ✅ Fix path storage dobel
       .replace("localhost:8000storage", "localhost:8000/storage"); // ✅ Fix path aneh di localhost
 
+    // ✅ Pastikan ada `/storage/` jika tidak ada
+    if (!cleanUrl.includes("/storage/")) {
+      cleanUrl = cleanUrl.replace("/umkm_images/", "/storage/umkm_images/");
+    }
+
+    // ✅ Pastikan URL lengkap dengan http/https
     if (!cleanUrl.startsWith("http")) {
       cleanUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${cleanUrl.replace(
         /^\/?/,
@@ -273,7 +279,7 @@ export default function Home() {
                 >
                   <CardContent className="p-4">
                     <Image
-                      src={umkm.image || "/placeholder.svg"}
+                      src={cleanImageUrl(umkm.image) || "/placeholder.svg"}
                       alt={umkm.name}
                       width={280}
                       height={200}
