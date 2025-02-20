@@ -135,15 +135,17 @@ export default function Home() {
 
           if (umkm.images) {
             try {
-              const parsedImages = JSON.parse(umkm.images);
+              const parsedImages = JSON.parse(umkm.images.replace(/\\/g, "")); // ✅ Fix parsing JSON
               if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-                imagesArray = parsedImages;
-                selectedImage = `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${imagesArray[0]}`;
+                imagesArray = parsedImages.map(cleanImageUrl);
+                selectedImage = cleanImageUrl(parsedImages[0]);
               }
             } catch (error) {
-              console.error("Error parsing images JSON:", error);
+              console.error("❌ Error parsing images JSON:", error);
             }
           }
+
+          console.log("✅ Fetched UMKM Image:", selectedImage); // 🔍 Debug hasil gambar
 
           return {
             ...umkm,
@@ -156,12 +158,30 @@ export default function Home() {
         setUmkms(processedData);
         setFilteredUMKMs(processedData);
       } catch (error) {
-        console.error("Failed to fetch UMKMs:", error);
+        console.error("❌ Failed to fetch UMKMs:", error);
       }
     };
 
     fetchUmkms();
   }, []);
+
+  const cleanImageUrl = (url: string) => {
+    if (!url) return "/placeholder.svg";
+
+    let cleanUrl = url
+      .replace(/\\/g, "") // ✅ Hapus karakter backslash yang tidak perlu
+      .replace(/\/?storage\/+storage\//g, "/storage/") // ✅ Fix path yang dobel `storage/storage/`
+      .replace("localhost:8000storage", "localhost:8000/storage"); // ✅ Fix path aneh di localhost
+
+    if (!cleanUrl.startsWith("http")) {
+      cleanUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${cleanUrl.replace(
+        /^\/?/,
+        ""
+      )}`;
+    }
+
+    return cleanUrl;
+  };
 
   /** ✅ Handle Search */
   const handleSearch = (query: string) => {
@@ -257,7 +277,9 @@ export default function Home() {
                       alt={umkm.name}
                       width={280}
                       height={200}
-                      className="rounded-lg mb-4 object-cover"
+                      className="rounded-lg mb-4 object-cover max-h-40"
+                      unoptimized={true} // ✅ Pastikan Next.js tidak mengubah URL
+                      loading="eager" // ✅ Pastikan gambar langsung dimuat
                     />
                     <h3 className="text-lg font-semibold mb-2">{umkm.name}</h3>
                     <p className="text-sm text-muted-foreground mb-2 line-clamp-2">

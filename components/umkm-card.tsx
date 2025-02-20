@@ -61,6 +61,28 @@ const UMKMCard: React.FC<UMKMCardProps> = ({
     }
   };
 
+  const fixImageUrl = (url: string) => {
+    if (!url) return "/placeholder.svg";
+
+    let fixedUrl = url.replace(/\\/g, ""); // Hapus karakter backslash
+    fixedUrl = fixedUrl.replace(/\/?storage\/+storage\//g, "/storage/"); // Perbaiki path storage yang dobel
+
+    // ✅ Tambahkan "/storage/" jika hilang
+    if (!fixedUrl.includes("/storage/")) {
+      fixedUrl = fixedUrl.replace("/umkm_images/", "/storage/umkm_images/");
+    }
+
+    // ✅ Pastikan URL lengkap
+    if (!fixedUrl.startsWith("http")) {
+      fixedUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${fixedUrl.replace(
+        /^\/?/,
+        ""
+      )}`;
+    }
+
+    return fixedUrl;
+  };
+
   return (
     <motion.div
       className="bg-card text-card-foreground rounded-lg overflow-hidden shadow-lg"
@@ -68,12 +90,13 @@ const UMKMCard: React.FC<UMKMCardProps> = ({
       whileTap={{ scale: 0.98 }}
     >
       <div className="relative h-48">
-        <Image
-          src={image || "/placeholder.svg"}
+        <img
+          src={fixImageUrl(image)}
           alt={name}
-          layout="fill"
-          objectFit="cover"
+          className="w-full h-full object-cover"
+          loading="lazy"
         />
+
         <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm font-semibold">
           {type}
         </div>
