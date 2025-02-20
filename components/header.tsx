@@ -1,40 +1,46 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, Heart, Search } from "lucide-react"
-import { Button } from "./ui/button"
-import { useFavorites } from "@/lib/favorites-context"
-import { Badge } from "./ui/badge"
-import SearchPopup from "./search-popup"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, Heart, Search } from "lucide-react";
+import { Button } from "./ui/button";
+import { useFavorites } from "@/lib/favorites-context";
+import { Badge } from "./ui/badge";
+import SearchPopup from "./search-popup";
 
 const navItems = [
   { name: "Home", href: "/" },
   { name: "UMKMs", href: "/umkms" },
-]
+];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const pathname = usePathname()
-  const { favorites } = useFavorites()
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const pathname = usePathname();
+  const { favorites } = useFavorites();
+  const isProduction = process.env.NEXT_PUBLIC_ENV === "production";
+  const loginURL = isProduction
+    ? "https://seller.ahmakbar.site"
+    : "http://localhost:3001";
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
+      setIsScrolled(window.scrollY > 10);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <motion.header
       className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-md shadow-md" : "bg-transparent"
+        isScrolled
+          ? "bg-background/80 backdrop-blur-md shadow-md"
+          : "bg-transparent"
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -61,11 +67,21 @@ export default function Header() {
             ))}
           </nav>
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)} aria-label="Search">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Search"
+            >
               <Search className="h-5 w-5" />
             </Button>
             <Link href="/favorites">
-              <Button variant="ghost" size="icon" aria-label="Favorites" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Favorites"
+                className="relative"
+              >
                 <Heart className="h-5 w-5" />
                 {favorites.length > 0 && (
                   <Badge
@@ -76,6 +92,9 @@ export default function Header() {
                   </Badge>
                 )}
               </Button>
+            </Link>
+            <Link href={loginURL}>
+              <Button variant="default">Login UMKM</Button>
             </Link>
           </div>
           <Button
@@ -114,7 +133,11 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
-                <Button variant="outline" className="w-full" onClick={() => setIsSearchOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsSearchOpen(true)}
+                >
                   <Search className="h-5 w-5 mr-2" />
                   Search UMKMs
                 </Button>
@@ -132,13 +155,20 @@ export default function Header() {
                     )}
                   </Button>
                 </Link>
+                <Link href={loginURL} onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Login UMKM
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      <SearchPopup isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <SearchPopup
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </motion.header>
-  )
+  );
 }
-
