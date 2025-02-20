@@ -156,7 +156,7 @@ export default function UMKMDetailPage() {
 
     let cleanUrl = url
       .replace(/\\/g, "")
-      .replace(/\/?storage\/+storage\//g, "storage/");
+      .replace(/\/?storage\/+storage\//g, "/storage/");
 
     // ✅ Perbaiki jika ada path yang salah di localhost
     cleanUrl = cleanUrl.replace(
