@@ -113,8 +113,6 @@ export default function UMKMsPage() {
   const [filteredUMKMs, setFilteredUMKMs] = useState<UMKM[]>([]);
   const [categories, setCategories] = useState<string[]>(["All"]);
 
-  
-
   useEffect(() => {
     const fetchUMKMs = async () => {
       try {
@@ -126,31 +124,33 @@ export default function UMKMsPage() {
         const data = await response.json();
 
         // Proses parsing images dan kategori
-        const processedData = data.map((umkm: Record<string, unknown>) => {
-          let imagesArray: string[] = [];
-          let selectedImage: string = "/placeholder.png";
+        const processedData = data
+          .filter((umkm: any) => umkm.status === "Active") // ✅ Hanya tampilkan UMKM dengan status "Active"
+          .map((umkm: Record<string, unknown>) => {
+            let imagesArray: string[] = [];
+            let selectedImage: string = "/placeholder.png";
 
-          if (typeof umkm.images === "string") {
-            try {
-              const parsedImages = JSON.parse(umkm.images as string);
-              if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-                imagesArray = parsedImages;
-                selectedImage = `${
-                  process.env.NEXT_PUBLIC_API_BASE_URL
-                }/storage/${String(imagesArray[0])}`;
+            if (typeof umkm.images === "string") {
+              try {
+                const parsedImages = JSON.parse(umkm.images as string);
+                if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+                  imagesArray = parsedImages;
+                  selectedImage = `${
+                    process.env.NEXT_PUBLIC_API_BASE_URL
+                  }/storage/${String(imagesArray[0])}`;
+                }
+              } catch (error) {
+                console.error("Error parsing images JSON:", error);
               }
-            } catch (error) {
-              console.error("Error parsing images JSON:", error);
             }
-          }
 
-          return {
-            ...umkm,
-            image: selectedImage,
-            openingTime: umkm.openingTime || "09:00",
-            closingTime: umkm.closingTime || "18:00",
-          };
-        });
+            return {
+              ...umkm,
+              image: selectedImage,
+              openingTime: umkm.openingTime || "09:00",
+              closingTime: umkm.closingTime || "18:00",
+            };
+          });
 
         setUmkms(processedData);
         setFilteredUMKMs(processedData);

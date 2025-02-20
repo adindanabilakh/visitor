@@ -37,29 +37,31 @@ export default function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
         const data = await response.json();
 
         // Process images to ensure correct URL format
-        const processedData = data.map((umkm: any) => {
-          let imagesArray: string[] = [];
-          let selectedImage = "/placeholder.png"; // Default jika tidak ada gambar
+        const processedData = data
+          .filter((umkm: any) => umkm.status === "Active") // ✅ Hanya tampilkan UMKM dengan status "Active"
+          .map((umkm: any) => {
+            let imagesArray: string[] = [];
+            let selectedImage = "/placeholder.png"; // Default jika tidak ada gambar
 
-          if (umkm.images) {
-            try {
-              const parsedImages = JSON.parse(umkm.images);
-              if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-                imagesArray = parsedImages;
-                selectedImage = `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${imagesArray[0]}`;
+            if (umkm.images) {
+              try {
+                const parsedImages = JSON.parse(umkm.images);
+                if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+                  imagesArray = parsedImages;
+                  selectedImage = `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${imagesArray[0]}`;
+                }
+              } catch (error) {
+                console.error("Error parsing images JSON:", error);
               }
-            } catch (error) {
-              console.error("Error parsing images JSON:", error);
             }
-          }
 
-          return {
-            ...umkm,
-            name: umkm.name || "",
-            description: umkm.description || "",
-            image: selectedImage,
-          };
-        });
+            return {
+              ...umkm,
+              name: umkm.name || "",
+              description: umkm.description || "",
+              image: selectedImage,
+            };
+          });
 
         setUmkms(processedData);
       } catch (error) {

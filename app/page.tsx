@@ -10,59 +10,6 @@ import SearchFilter from "@/components/search-filter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-// const featuredUMKMs = [
-//   {
-//     id: "1",
-//     name: "Batik Sekar",
-//     description: "Traditional handmade batik from local artisans",
-//     image: "/placeholder.svg?height=400&width=300&text=Batik+Sekar",
-//     location: "Yogyakarta",
-//     category: "Textiles",
-//     openingTime: "09:00",
-//     closingTime: "18:00",
-//   },
-//   {
-//     id: "2",
-//     name: "Warung Sate Pak Kumis",
-//     description: "Delicious local satay with secret family recipe",
-//     image: "/placeholder.svg?height=400&width=300&text=Warung+Sate",
-//     location: "Jakarta",
-//     category: "Food",
-//     openingTime: "17:00",
-//     closingTime: "23:00",
-//   },
-//   {
-//     id: "3",
-//     name: "Kerajinan Bambu Indah",
-//     description: "Eco-friendly bamboo crafts and furniture",
-//     image: "/placeholder.svg?height=400&width=300&text=Bamboo+Crafts",
-//     location: "Bali",
-//     category: "Handicrafts",
-//     openingTime: "10:00",
-//     closingTime: "20:00",
-//   },
-//   {
-//     id: "4",
-//     name: "Tenun Ikat Sumba",
-//     description: "Exquisite hand-woven textiles from Sumba",
-//     image: "/placeholder.svg?height=400&width=300&text=Tenun+Ikat",
-//     location: "Sumba",
-//     category: "Textiles",
-//     openingTime: "08:00",
-//     closingTime: "17:00",
-//   },
-//   {
-//     id: "5",
-//     name: "Kopi Luwak Authentic",
-//     description: "Premium civet coffee from Indonesian plantations",
-//     image: "/placeholder.svg?height=400&width=300&text=Kopi+Luwak",
-//     location: "Aceh",
-//     category: "Food",
-//     openingTime: "07:00",
-//     closingTime: "22:00",
-//   },
-// ];
-
 interface UMKM {
   id: string;
   name: string;
@@ -129,31 +76,33 @@ export default function Home() {
         }
         const data = await response.json();
 
-        const processedData = data.map((umkm: any) => {
-          let imagesArray: string[] = [];
-          let selectedImage = "/placeholder.png"; // Default jika tidak ada gambar
+        const processedData = data
+          .filter((umkm: any) => umkm.status === "Active") // ✅ Hanya tampilkan UMKM dengan status "Active"
+          .map((umkm: any) => {
+            let imagesArray: string[] = [];
+            let selectedImage = "/placeholder.png"; // Default jika tidak ada gambar
 
-          if (umkm.images) {
-            try {
-              const parsedImages = JSON.parse(umkm.images.replace(/\\/g, "")); // ✅ Fix parsing JSON
-              if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-                imagesArray = parsedImages.map(cleanImageUrl);
-                selectedImage = cleanImageUrl(parsedImages[0]);
+            if (umkm.images) {
+              try {
+                const parsedImages = JSON.parse(umkm.images.replace(/\\/g, "")); // ✅ Fix parsing JSON
+                if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+                  imagesArray = parsedImages.map(cleanImageUrl);
+                  selectedImage = cleanImageUrl(parsedImages[0]);
+                }
+              } catch (error) {
+                console.error("❌ Error parsing images JSON:", error);
               }
-            } catch (error) {
-              console.error("❌ Error parsing images JSON:", error);
             }
-          }
 
-          console.log("✅ Fetched UMKM Image:", selectedImage); // 🔍 Debug hasil gambar
+            console.log("✅ Fetched UMKM Image:", selectedImage); // 🔍 Debug hasil gambar
 
-          return {
-            ...umkm,
-            image: selectedImage,
-            openingTime: "09:00",
-            closingTime: "18:00",
-          };
-        });
+            return {
+              ...umkm,
+              image: selectedImage,
+              openingTime: "09:00",
+              closingTime: "18:00",
+            };
+          });
 
         setUmkms(processedData);
         setFilteredUMKMs(processedData);

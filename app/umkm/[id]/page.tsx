@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/lib/favorites-context";
+import { useRouter } from "next/navigation"; // ✅ Import useRouter
 
 interface Product {
   id: number;
@@ -50,6 +51,7 @@ interface Category {
 
 export default function UMKMDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter(); // ✅ Inisialisasi router
 
   if (!params?.id) {
     return <div>Error: Invalid ID</div>; // Bisa ganti dengan UI khusus
@@ -70,6 +72,12 @@ export default function UMKMDetailPage() {
         if (!response.ok) throw new Error("Failed to fetch UMKM details");
 
         const data = await response.json();
+
+        // ✅ Cek jika status UMKM bukan "Active", redirect ke halaman utama
+        if (data.status !== "Active") {
+          router.push("/");
+          return;
+        }
 
         console.log("✅ Raw API Response:", data);
 
@@ -141,10 +149,9 @@ export default function UMKMDetailPage() {
 
     // ✅ Tambahkan `/` sebelum storage jika belum ada
     if (!cleanUrl.startsWith("http")) {
-      cleanUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${cleanUrl.replace(
-        /^\/?/,
-        ""
-      )}`;
+      cleanUrl = `${
+        process.env.NEXT_PUBLIC_API_BASE_URL
+      }/storage/${cleanUrl.replace(/^\/?/, "")}`;
     }
 
     return cleanUrl;
