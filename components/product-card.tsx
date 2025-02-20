@@ -1,10 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import ImageModal from "@/components/image-modal";
 
 interface ProductCardProps {
@@ -22,8 +20,14 @@ export default function ProductCard({
   image,
   price,
 }: ProductCardProps) {
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState("");
+
+  const openModal = () => {
+    console.log("✅ Opening modal with image:", image); // 🔍 Debug URL sebelum dikirim ke modal
+    setModalImage(image);
+    setIsModalOpen(true);
+  };
 
   return (
     <>
@@ -39,15 +43,15 @@ export default function ProductCard({
             width={400}
             height={200}
             className="w-full h-48 object-cover cursor-pointer"
-            onClick={() => setIsModalOpen(true)}
-            unoptimized // ✅ Fix jika Next.js masih bermasalah dengan gambar dari API
+            onClick={openModal}
+            unoptimized // ✅ Hindari `_next/image` agar URL tidak berubah
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity duration-300 flex items-center justify-center">
             <Button
               variant="secondary"
               size="sm"
               className="opacity-0 hover:opacity-100 transition-opacity duration-300"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openModal}
             >
               View Image
             </Button>
@@ -60,16 +64,15 @@ export default function ProductCard({
           </p>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xl font-bold">${price.toFixed(2)}</span>
-            {/* <Button onClick={() => router.push(`/umkm/${id}`)}>
-              View Details
-            </Button> */}
           </div>
         </div>
       </motion.div>
+
+      {/* ✅ Modal Image */}
       <ImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        imageSrc={image}
+        imageSrc={modalImage}
         imageAlt={name}
       />
     </>

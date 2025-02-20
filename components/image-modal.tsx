@@ -1,20 +1,27 @@
-"use client"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+"use client";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ImageModalProps {
-  isOpen: boolean
-  onClose: () => void
-  imageSrc: string
-  imageAlt: string
+  isOpen: boolean;
+  onClose: () => void;
+  imageSrc: string;
+  imageAlt: string;
 }
 
-export default function ImageModal({ isOpen, onClose, imageSrc, imageAlt }: ImageModalProps) {
+export default function ImageModal({
+  isOpen,
+  onClose,
+  imageSrc,
+  imageAlt,
+}: ImageModalProps) {
+  console.log("✅ Modal Image URL:", imageSrc); // 🔍 Debug URL gambar yang dikirim ke modal
+
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && imageSrc && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -29,20 +36,32 @@ export default function ImageModal({ isOpen, onClose, imageSrc, imageAlt }: Imag
             className="relative bg-background rounded-lg max-w-3xl max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={onClose}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 z-10"
+              onClick={onClose}
+            >
               <X className="h-4 w-4" />
             </Button>
-            <Image
-              src={imageSrc || "/placeholder.svg"}
-              alt={imageAlt}
-              width={800}
-              height={600}
-              className="w-full h-full object-contain"
-            />
+            {imageSrc ? (
+              <Image
+                src={imageSrc}
+                alt={imageAlt}
+                width={800}
+                height={600}
+                className="w-full h-full object-contain"
+                unoptimized // ✅ Hindari `_next/image` agar URL tidak berubah
+                loading="eager" // ✅ Langsung load gambar di modal
+              />
+            ) : (
+              <p className="text-center text-muted-foreground">
+                No Image Available
+              </p>
+            )}
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
-
