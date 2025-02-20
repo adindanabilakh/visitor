@@ -13,6 +13,41 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/lib/favorites-context";
 
+interface Product {
+  id: number;
+  umkm_id: number;
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UMKM {
+  id: number;
+  name: string;
+  type: string;
+  description: string;
+  image: string;
+  images?: string[];
+  location?: string;
+  location_url?: string;
+  address: string;
+  category: string;
+  phone_number?: string;
+  document?: string;
+  status?: string;
+  openingTime: string;
+  closingTime: string;
+  products?: Product[]; // ✅ Tambahkan produk
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 export default function UMKMDetailPage() {
   const params = useParams<{ id: string }>();
 
@@ -21,64 +56,149 @@ export default function UMKMDetailPage() {
   }
 
   // Mock data - di real aplikasi ini bisa diganti dengan fetch dari API
-  const umkmData = {
-    id: params.id,
-    name: "Batik Sekar",
-    description:
-      "Traditional handmade batik from local artisans, featuring intricate patterns and vibrant colors that reflect the rich cultural heritage of Indonesia.",
-    images: [
-      "/placeholder.svg?height=400&width=800&text=UMKM+Image+1",
-      "/placeholder.svg?height=400&width=800&text=UMKM+Image+2",
-      "/placeholder.svg?height=400&width=800&text=UMKM+Image+3",
-    ],
-    image: "/placeholder.svg?height=400&width=800&text=UMKM+Image+1",
-    location: "Jl. Malioboro No. 123, Yogyakarta",
-    phoneNumber: "+62 812-3456-7890",
-    latitude: -7.797068,
-    longitude: 110.370529,
-    openingTime: "09:00",
-    closingTime: "18:00",
-    category: "Textiles",
-    products: [
-      {
-        id: "1",
-        name: "Batik Shirt",
-        description: "Handmade batik shirt with traditional Javanese motifs",
-        image: "/placeholder.svg?height=200&width=400&text=Batik+Shirt",
-        price: 49.99,
-      },
-      {
-        id: "2",
-        name: "Batik Scarf",
-        description: "Elegant batik scarf made from fine silk",
-        image: "/placeholder.svg?height=200&width=400&text=Batik+Scarf",
-        price: 29.99,
-      },
-      {
-        id: "3",
-        name: "Batik Tablecloth",
-        description:
-          "Beautiful batik tablecloth for a touch of Indonesian elegance",
-        image: "/placeholder.svg?height=200&width=400&text=Batik+Tablecloth",
-        price: 39.99,
-      },
-    ],
-  };
+  const [umkm, setUMKM] = useState<UMKM | null>(null);
 
-  const [umkm, setUMKM] = useState(umkmData);
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites();
-  const isFavorited = isFavorite(umkm.id);
+  const isFavorited = umkm ? isFavorite(String(umkm.id)) : false;
 
   useEffect(() => {
-    // Jika nanti ada API, bisa fetch di sini berdasarkan params.id
-    setUMKM(umkmData);
+    const fetchUMKMDetail = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/umkms/${params.id}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch UMKM details");
+
+        const data = await response.json();
+
+        console.log("✅ Raw API Response:", data);
+
+        // ✅ Proses gambar UMKM (Fix JSON Parsing)
+        let selectedImage = "/placeholder.svg";
+        let imagesArray: string[] = [];
+
+        if (data.images) {
+          try {
+            const parsedImages = JSON.parse(data.images.replace(/\\/g, ""));
+            if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+              imagesArray = parsedImages.map(cleanUMKMImageUrl);
+              selectedImage = cleanUMKMImageUrl(parsedImages[0]);
+            }
+          } catch (error) {
+            console.error("❌ Error parsing images JSON:", error);
+          }
+        }
+
+        console.log("✅ UMKM Images Array:", imagesArray);
+
+        // ✅ Proses gambar produk
+        const products = data.products.map((product: any) => {
+          const fixedImage = cleanProductImageUrl(product.image);
+          console.log(`🔍 Product ${product.id} image:`, fixedImage);
+          return {
+            ...product,
+            image: fixedImage,
+          };
+        });
+
+        const processedUMKM = {
+          id: data.id,
+          name: data.name,
+          type: data.type,
+          description: data.description || "No description available",
+          image: selectedImage,
+          images: imagesArray,
+          location_url: data.location_url || "",
+          address: data.address || "Address not provided",
+          category: data.type || "Unknown",
+          phone_number: data.phone_number || "No phone number available",
+          document: data.document || "",
+          status: data.status || "Unknown",
+          openingTime: "09:00",
+          closingTime: "18:00",
+          products, // ✅ Produk dengan gambar yang benar
+        };
+
+        console.log("✅ Processed UMKM Data:", processedUMKM);
+        setUMKM(processedUMKM);
+      } catch (error) {
+        console.error("❌ Error fetching UMKM details:", error);
+      }
+    };
+
+    if (params.id) {
+      fetchUMKMDetail();
+    }
   }, [params.id]);
+
+  // ✅ Fungsi untuk membersihkan URL gambar UMKM (gunakan Next.js Image)
+  const cleanUMKMImageUrl = (url: string) => {
+    if (!url) return "/placeholder.svg";
+
+    let cleanUrl = url
+      .replace(/\\/g, "")
+      .replace(/\/?storage\/+storage\//g, "storage/");
+
+    // ✅ Tambahkan `/` sebelum storage jika belum ada
+    if (!cleanUrl.startsWith("http")) {
+      cleanUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/storage/${cleanUrl.replace(
+        /^\/?/,
+        ""
+      )}`;
+    }
+
+    return cleanUrl;
+  };
+
+  // ✅ Fungsi untuk membersihkan URL gambar produk
+  const cleanProductImageUrl = (url: string) => {
+    if (!url) return "/placeholder.svg";
+
+    let cleanUrl = url
+      .replace(/\\/g, "")
+      .replace(/\/?storage\/+storage\//g, "storage/");
+
+    // ✅ Perbaiki jika ada path yang salah di localhost
+    cleanUrl = cleanUrl.replace(
+      "localhost:8000storage",
+      "localhost:8000/storage"
+    );
+
+    // ✅ Tambahkan '/' sebelum `storage/` jika belum ada
+    if (!cleanUrl.startsWith("http")) {
+      cleanUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${cleanUrl.replace(
+        /^\/?/,
+        ""
+      )}`;
+    }
+
+    return cleanUrl;
+  };
+
+  if (!umkm) {
+    return (
+      <div className="text-center text-muted-foreground">
+        Loading UMKM details...
+      </div>
+    );
+  }
+
+  const extractMapSrc = (iframeString: string) => {
+    const match = iframeString.match(/src="([^"]+)"/);
+    return match ? match[1] : "";
+  };
 
   const handleFavoriteToggle = () => {
     if (isFavorited) {
-      removeFavorite(umkm.id);
+      removeFavorite(String(umkm.id)); // ✅ Pastikan ID bertipe string
     } else {
-      addFavorite(umkm);
+      addFavorite({
+        ...umkm,
+        id: String(umkm.id), // ✅ Konversi ID ke string
+        location: umkm.location ?? "", // ✅ Pastikan location memiliki nilai default
+        openingTime: umkm.openingTime ?? "09:00", // ✅ Default jika tidak ada
+        closingTime: umkm.closingTime ?? "18:00", // ✅ Default jika tidak ada
+      });
     }
   };
 
@@ -91,7 +211,7 @@ export default function UMKMDetailPage() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
-            <ImageGallery images={umkm.images} />
+            <ImageGallery images={umkm?.images || [umkm?.image]} />
           </div>
           <div>
             <div className="flex justify-between items-start mb-4">
@@ -124,11 +244,11 @@ export default function UMKMDetailPage() {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <MapPin className="w-5 h-5 mr-2 text-primary" />
-                    <span>{umkm.location}</span>
+                    <span>{umkm.address}</span>
                   </div>
                   <div className="flex items-center">
                     <Phone className="w-5 h-5 mr-2 text-primary" />
-                    <span>{umkm.phoneNumber}</span>
+                    <span>{umkm?.phone_number || "No contact info"}</span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-5 h-5 mr-2 text-primary" />
@@ -149,15 +269,35 @@ export default function UMKMDetailPage() {
           </TabsList>
           <TabsContent value="products">
             <h2 className="text-2xl font-semibold mb-4">Featured Products</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {umkm.products.map((product) => (
-                <ProductCard key={product.id} {...product} />
-              ))}
-            </div>
+            {umkm.products && umkm.products.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {umkm.products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id.toString()}
+                    name={product.name}
+                    description={product.description}
+                    image={product.image}
+                    price={parseFloat(product.price)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No products available.</p>
+            )}
           </TabsContent>
+
           <TabsContent value="location">
             <h2 className="text-2xl font-semibold mb-4">Location</h2>
-            <GoogleMap latitude={umkm.latitude} longitude={umkm.longitude} />
+            <div className="w-full h-[450px] rounded-lg overflow-hidden">
+              <iframe
+                src={extractMapSrc(umkm.location_url || "")}
+                className="w-full h-full border-0"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </TabsContent>
         </Tabs>
 

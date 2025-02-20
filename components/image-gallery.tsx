@@ -1,25 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ImageGalleryProps {
-  images: string[]
+  images: string[];
 }
 
 export default function ImageGallery({ images }: ImageGalleryProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (!images || images.length === 0) {
+    images = ["/placeholder.svg"]; // ✅ Default placeholder jika tidak ada gambar
+  }
 
   const nextImage = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
-  }
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
 
   const prevImage = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
-  }
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
+  console.log("✅ Image Gallery:", images); // 🔍 Debug array images
 
   return (
     <div className="relative w-full aspect-square rounded-lg overflow-hidden">
@@ -32,12 +38,17 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           transition={{ duration: 0.5 }}
           className="absolute inset-0"
         >
-          <Image
-            src={images[currentIndex] || "/placeholder.svg"}
-            alt={`UMKM image ${currentIndex + 1}`}
-            fill
-            className="object-cover"
-          />
+          {images[currentIndex] ? (
+            <Image
+              src={images[currentIndex]}
+              alt={`UMKM image ${currentIndex + 1}`}
+              fill
+              className="object-cover"
+              unoptimized // ✅ Hindari _next/image agar URL tidak berubah
+            />
+          ) : (
+            <Image src="/placeholder.svg" alt="Placeholder" fill className="object-cover" />
+          )}
         </motion.div>
       </AnimatePresence>
       <div className="absolute inset-0 flex items-center justify-between p-4">
@@ -68,6 +79,5 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
-
