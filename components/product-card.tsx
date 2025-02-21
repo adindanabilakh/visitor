@@ -29,6 +29,15 @@ export default function ProductCard({
     setIsModalOpen(true);
   };
 
+  const formatRupiah = (value: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
   return (
     <>
       <motion.div
@@ -63,7 +72,7 @@ export default function ProductCard({
             {description}
           </p>
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xl font-bold">${price.toFixed(2)}</span>
+            <span className="text-xl font-bold">{formatRupiah(price)}</span>
           </div>
         </div>
       </motion.div>
