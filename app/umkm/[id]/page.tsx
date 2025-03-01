@@ -122,8 +122,8 @@ export default function UMKMDetailPage() {
           phone_number: data.phone_number || "No phone number available",
           document: data.document || "",
           status: data.status || "Unknown",
-          openingTime: "09:00",
-          closingTime: "18:00",
+          openingTime: data.open_time || "Unknown", // ✅ Ambil open_time dari API
+          closingTime: data.close_time || "Unknown", // ✅ Ambil close_time dari API
           products, // ✅ Produk dengan gambar yang benar
         };
 
@@ -260,7 +260,8 @@ export default function UMKMDetailPage() {
                   <div className="flex items-center">
                     <Clock className="w-5 h-5 mr-2 text-primary" />
                     <span>
-                      Open: {umkm.openingTime} - {umkm.closingTime}
+                      Open: {umkm.openingTime?.split(":").slice(0, 2).join(":")}{" "}
+                      - {umkm.closingTime?.split(":").slice(0, 2).join(":")}
                     </span>
                   </div>
                 </div>
