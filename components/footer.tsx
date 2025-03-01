@@ -21,21 +21,21 @@ export default function Footer() {
                   Home
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
                   About
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/umkm" className="text-muted-foreground hover:text-primary transition-colors">
                   UMKMs
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
                   Contact
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div>
