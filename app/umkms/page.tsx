@@ -144,11 +144,15 @@ export default function UMKMsPage() {
               }
             }
 
+            // ✅ Format open/close time agar tidak menampilkan ":00"
+            const formatTime = (time: string | null) =>
+              time ? time.slice(0, 5) : "Unknown";
+
             return {
               ...umkm,
               image: selectedImage,
-              openingTime: umkm.openingTime || "09:00",
-              closingTime: umkm.closingTime || "18:00",
+              openingTime: formatTime(umkm.open_time as string | null), // ✅ Paksa sebagai string | null
+              closingTime: formatTime(umkm.close_time as string | null), // ✅ Paksa sebagai string | null
             };
           });
 

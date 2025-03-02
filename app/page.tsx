@@ -96,11 +96,15 @@ export default function Home() {
 
             console.log("✅ Fetched UMKM Image:", selectedImage); // 🔍 Debug hasil gambar
 
+            // ✅ Format jam agar tidak menampilkan ":00"
+            const formatTime = (time: string | null) =>
+              time ? time.slice(0, 5) : "Unknown";
+
             return {
               ...umkm,
               image: selectedImage,
-              openingTime: "09:00",
-              closingTime: "18:00",
+              openingTime: formatTime(umkm.open_time), // ✅ Format 24 jam tanpa detik
+              closingTime: formatTime(umkm.close_time), // ✅ Format 24 jam tanpa detik
             };
           });
 

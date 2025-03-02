@@ -35,8 +35,8 @@ const UMKMCard: React.FC<UMKMCardProps> = ({
   location_url, // Sesuai dengan API
   address,
   category,
-  openingTime = "09:00", // Default value as placeholder
-  closingTime = "18:00", // Default value as placeholder
+  openingTime = "Unknown", // Default value as placeholder
+  closingTime = "Unknown", // Default value as placeholder
 }) => {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const favorite = isFavorite(id);
